@@ -22,10 +22,8 @@ int main(int argc, char ** argv, char ** envp) {
 		return EXIT_FAILURE;
 	}
 
-	printf("%s\n%s\n%s\n", i_config_node->i_colors_format_file, 
-	i_config_node->i_wallpaper_dir_name, 
-	i_config_node->i_wallpaper_format_file);
+	write_to_format_file(i_config_node);
 
 	clean_up(i_config_node);
-	return 0;
+	return EXIT_SUCCESS;
 }

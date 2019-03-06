@@ -17,6 +17,7 @@
 #define I_COLOR_FORMAT_FILE "color_format_file"
 
 
+
 /* 
 	structure to contin the config part of the project
 	i.e config file object, path and the chosen enviroment
@@ -26,10 +27,14 @@ typedef struct dirent dirent;
 
 typedef struct i_config {
 	char * i_config_path;
+	
 	char * i_wallpaper_format_file;
 	char * i_colors_format_file;
-	char * i_wallpaper_dir_name;
 
+	char * i_wallpaper_config_file;
+	char * i_colors_config_file;
+
+	char * i_wallpaper_dir_name;
 	char ** wallpaper_dir_list;
 	size_t dir_len;
 
@@ -43,7 +48,10 @@ void clean_up(i_config * i_config_node);
 char * load_env(const char * env_buffer, const char * key);
 ssize_t read_from_config_file(const char * config_path, i_config * config);
 ssize_t get_wallpapers(DIR * directory, i_config * i_config_node);
-ssize_t write_to_format_file(const char * filename, const char * value);
+ssize_t write_to_format_file(i_config * i_config_node);
 
+ssize_t replace(char ** _in, const char * _with, const char * filename);
+ssize_t safe_read_data_from_file(const char * file_name, char ** buffer);
+ssize_t file_size(int fd);
 
 #endif
