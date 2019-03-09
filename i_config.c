@@ -75,9 +75,9 @@ ssize_t read_from_config_file(const char * config_path, i_config * config) {
 	validator |= (config->i_wallpaper_dir_name = load_env(env_buffer, I_WALLPAPER_DIR_KEY)) == NULL;
 	validator |= (config->i_wallpaper_format_file = load_env(env_buffer, I_WALLPAPER_FORMAT_FILE)) == NULL;
 	validator |= (config->i_colors_format_file = load_env(env_buffer, I_COLOR_FORMAT_FILE)) == NULL;
-	/*
-		TODO: add config files kyes
-	*/
+	validator |= (config->i_wallpaper_config_file = load_env(env_buffer, I_WALLPAPER_CONFIG_FILE)) == NULL;
+	validator |= (config->i_colors_config_file = load_env(env_buffer, I_COLORS_CONFIG_FILE)) == NULL;
+
 	config->i_env_node = NULL;
 
 	
@@ -117,17 +117,58 @@ ssize_t get_wallpapers(DIR * directory, i_config * i_config_node) {
 	return n;
 }
 
-ssize_t write_to_format_file(i_config * i_config_node) {
-	char * out_buffer = NULL;
-	ssize_t size;
+ssize_t i_sprintf(char ** _out, char * _format, i_config * _i_node) {
+	if (!_out || !_format || !_i_node) {
+		return -1;	
+	}
+	
+	size_t n = strlen(_format);
+	size_t len = 0;
+	char * _format_string = NULL;
+	char * _data = NULL; 
+	char * out = NULL;
 
-	size = safe_read_data_from_file(i_config_node->i_wallpaper_format_file, &out_buffer);
+	for (int i = 0; i < n; i++) {
+		if (_format[i] == '$') {
+			char * p = NULL;
+
+	 		if ((p = strstr(_format, I_WALLPAPER_FORMAT_STRING)) == (_format + i + 1)) {	
+				_format_string = I_WALLPAPER_FORMAT_STRING;
+				_data = strcat(_i_node->i_wallpaper_dir_name, "kal");
+		    }
+
+			/* other cases */
+
+			if (_data && _format_string) {
+				out = strndup(_format, i);
+				len = strlen(_format) + (strlen(_data) - strlen(_format_string));
+				(*_out) = (char*)calloc(len + 1, sizeof(char));
+				sprintf(*_out, "%s%s%s", out, _data, p + strlen(_format_string));
+				free(out);
+				return strlen(*_out);
+			}
+		}
+	}
+	fprintf(stderr, "the string \'%s\' in one of the format files does not match the program formatting scheme" "\n ", _format);
+	return -1;
+}
+
+ssize_t write_to_format_file(i_config * i_config_node) {
+	char * in_buffer = NULL;
+	char * out_buffer = NULL;
+	ssize_t size = 0;
+
+	/*
+		TODO: randomize a wallpaper from the list
+	*/
+
+	size = safe_read_data_from_file(i_config_node->i_wallpaper_format_file, &in_buffer);
 
 	if (size < 0) {
 		return -1;
 	}
-
-	size = replace(&out_buffer, "test", i_config_node->i_wallpaper_format_file);
+	
+	size = i_sprintf(&out_buffer, in_buffer, i_config_node);
 
 	if (size < 0) {
 		return -1;
@@ -135,37 +176,18 @@ ssize_t write_to_format_file(i_config * i_config_node) {
 	
 	/*
 		TODO: write the output buffer to the desired file
-		randomize a chosen wallpaper
 	*/
 	
+	free(in_buffer);
 	free(out_buffer);
 	return 0;
-}
-
-ssize_t replace(char ** _in, const char * _with, const char * filename) {
-	if (!_in || !_with) {
-		return -1;
-	}
-
-	if (strstr(*_in, "%s") == NULL) {
-		fprintf(stderr, "format of file %s is inconsistent with randenv format", filename);
-		return -1;
-	} 
-
-	ssize_t len = strlen(*_in) + strlen(_with) - 2;
-	char * new_in = (char*)calloc(len, sizeof(char));
-	sprintf(new_in, (*_in), _with);
-
-	free((*_in));
-	(*_in) = new_in;
-	return len; 
 }
 
 ssize_t safe_read_data_from_file(const char * file_name, char ** buffer) {
     char * out_buffer = NULL;
 	int fd = 0;
 	ssize_t size = 0;
-	//printf("%d\n", strlen(file_name));
+
 	if ((fd = open(file_name, O_RDONLY)) < 0) {
 		perror("failed to open file");
 		return -1;

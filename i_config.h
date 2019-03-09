@@ -12,11 +12,15 @@
 
 #include "i_enviroment.h"
 
-#define I_WALLPAPER_FORMAT_FILE "wallpaper_format_file"
+
 #define I_WALLPAPER_DIR_KEY "wallpaper_dir"
+#define I_WALLPAPER_FORMAT_FILE "wallpaper_format_file"
 #define I_COLOR_FORMAT_FILE "color_format_file"
+#define I_WALLPAPER_CONFIG_FILE "wallpaper_config_file"
+#define I_COLORS_CONFIG_FILE "colors_config_file"
 
-
+#define I_WALLPAPER_FORMAT_STRING "{wallpaper}"
+#define I_COLORS_FORMAT_STRING "{sys_color_n}"
 
 /* 
 	structure to contin the config part of the project
@@ -50,7 +54,7 @@ ssize_t read_from_config_file(const char * config_path, i_config * config);
 ssize_t get_wallpapers(DIR * directory, i_config * i_config_node);
 ssize_t write_to_format_file(i_config * i_config_node);
 
-ssize_t replace(char ** _in, const char * _with, const char * filename);
+ssize_t i_sprintf(char ** _out, char * _format, i_config * _i_node);
 ssize_t safe_read_data_from_file(const char * file_name, char ** buffer);
 ssize_t file_size(int fd);
 
