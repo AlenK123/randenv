@@ -11,6 +11,7 @@
 #include <stdbool.h>
 
 #include "i_enviroment.h"
+#include "random_choice.h"
 
 
 #define I_WALLPAPER_DIR_KEY "wallpaper_dir"
@@ -55,6 +56,8 @@ ssize_t get_wallpapers(DIR * directory, i_config * i_config_node);
 ssize_t write_to_format_file(i_config * i_config_node);
 
 ssize_t i_sprintf(char ** _out, char * _format, i_config * _i_node);
+
+ssize_t safe_write_data_to_file(const char * filename, const char * buffer);
 ssize_t safe_read_data_from_file(const char * file_name, char ** buffer);
 ssize_t file_size(int fd);
 

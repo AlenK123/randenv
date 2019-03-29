@@ -1,5 +1,5 @@
 /*
- * program that randomizes the wallpaper and system colours 
+ * program that randomizes the wallpaper and system colours
  * then puts the calculated data in the desired config files
  * AlenK123 march 2019
  */
@@ -13,10 +13,10 @@ extern int errno;
 int main(int argc, char ** argv, char ** envp) {
 	if (argc < 2) {
 		printf("randenv <Path to config file>" "\n");
-		return EXIT_SUCCESS;	
+		return EXIT_SUCCESS;
 	}
 	
-	i_config * i_config_node = init(argv[1]);	
+	i_config * i_config_node = init(argv[1]);
 
 	if (i_config_node == NULL) {
 		return EXIT_FAILURE;

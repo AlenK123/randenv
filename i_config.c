@@ -10,7 +10,7 @@ i_config * init(const char * config_path) {
 	}
 
 	if (read_from_config_file(config_path, i_config_node) < 0) {
-		perror("read error");
+		perror("Read error");
 		clean_up(i_config_node);
 		return NULL;
 	}
@@ -21,6 +21,8 @@ i_config * init(const char * config_path) {
 		clean_up(i_config_node);
 		return NULL;
 	}
+
+	i_config_node->i_env_node = (i_enviroment*)malloc(sizeof(i_enviroment));
 
 	closedir(wallpaper_dir);
 	
@@ -77,9 +79,6 @@ ssize_t read_from_config_file(const char * config_path, i_config * config) {
 	validator |= (config->i_colors_format_file = load_env(env_buffer, I_COLOR_FORMAT_FILE)) == NULL;
 	validator |= (config->i_wallpaper_config_file = load_env(env_buffer, I_WALLPAPER_CONFIG_FILE)) == NULL;
 	validator |= (config->i_colors_config_file = load_env(env_buffer, I_COLORS_CONFIG_FILE)) == NULL;
-
-	config->i_env_node = NULL;
-
 	
 	free(env_buffer);
 
@@ -134,10 +133,16 @@ ssize_t i_sprintf(char ** _out, char * _format, i_config * _i_node) {
 
 	 		if ((p = strstr(_format, I_WALLPAPER_FORMAT_STRING)) == (_format + i + 1)) {	
 				_format_string = I_WALLPAPER_FORMAT_STRING;
-				_data = strcat(_i_node->i_wallpaper_dir_name, "kal");
+				_data = (char*)malloc((
+					strlen(_i_node->i_wallpaper_dir_name) + 
+					strlen(_i_node->i_env_node->i_wallpaper_config) + 1) * 
+					sizeof(char)
+				);
+
+				sprintf(_data, "%s%s", _i_node->i_wallpaper_dir_name, _i_node->i_env_node->i_wallpaper_config);
 		    }
 
-			/* other cases */
+			/* TODO: other cases */
 
 			if (_data && _format_string) {
 				out = strndup(_format, i);
@@ -145,6 +150,7 @@ ssize_t i_sprintf(char ** _out, char * _format, i_config * _i_node) {
 				(*_out) = (char*)calloc(len + 1, sizeof(char));
 				sprintf(*_out, "%s%s%s", out, _data, p + strlen(_format_string));
 				free(out);
+				free(_data);
 				return strlen(*_out);
 			}
 		}
@@ -158,29 +164,50 @@ ssize_t write_to_format_file(i_config * i_config_node) {
 	char * out_buffer = NULL;
 	ssize_t size = 0;
 
-	/*
-		TODO: randomize a wallpaper from the list
-	*/
+	char * _wallpaper = NULL;
 
+	random_choice(&_wallpaper, i_config_node->wallpaper_dir_list, i_config_node->dir_len);
+	i_config_node->i_env_node->i_wallpaper_config = _wallpaper;
+	
 	size = safe_read_data_from_file(i_config_node->i_wallpaper_format_file, &in_buffer);
 
 	if (size < 0) {
 		return -1;
 	}
+
+	/* TODO: handle errors and stuff */
 	
 	size = i_sprintf(&out_buffer, in_buffer, i_config_node);
 
 	if (size < 0) {
 		return -1;
 	}
-	
-	/*
-		TODO: write the output buffer to the desired file
-	*/
-	
+
+	if (safe_write_data_to_file(i_config_node->i_wallpaper_config_file, out_buffer) < 0) {
+
+	}
+
 	free(in_buffer);
 	free(out_buffer);
 	return 0;
+}
+
+ssize_t safe_write_data_to_file(const char * filename, const char * buffer) {
+	int fd = open(filename, O_WRONLY);	
+	size_t _n = strlen(buffer);	
+	if (fd < 0) {
+		perror(filename);
+		return -1;
+	}
+
+	if (write(fd, buffer, _n) < _n) {
+		char msg[256] = "";
+		sprintf(msg, "could not write to %s", filename);
+		perror(msg);
+		return -1;
+	}
+
+	return _n;
 }
 
 ssize_t safe_read_data_from_file(const char * file_name, char ** buffer) {
