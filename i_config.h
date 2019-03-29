@@ -23,6 +23,9 @@
 #define I_WALLPAPER_FORMAT_STRING "{wallpaper}"
 #define I_COLORS_FORMAT_STRING "{sys_color_n}"
 
+#define I_CONFIG_FORMAT I_WALLPAPER_DIR_KEY "=\n" I_WALLPAPER_FORMAT_FILE "=\n" \
+I_COLOR_FORMAT_FILE "=\n" I_WALLPAPER_CONFIG_FILE "=\n" I_COLORS_CONFIG_FILE "="
+
 /* 
 	structure to contin the config part of the project
 	i.e config file object, path and the chosen enviroment
@@ -49,6 +52,8 @@ typedef struct i_config {
 
 i_config * init(const char * config_path);
 void clean_up(i_config * i_config_node);
+
+ssize_t generate_config_file(const char * gen_filename);
 
 char * load_env(const char * env_buffer, const char * key);
 ssize_t read_from_config_file(const char * config_path, i_config * config);

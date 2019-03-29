@@ -44,6 +44,27 @@ void clean_up(i_config * i_config_node) {
 	i_config_node->wallpaper_dir_list = NULL;
 }
 
+ssize_t generate_config_file(const char * gen_filename) {
+	int fd;
+	size_t n = strlen(I_CONFIG_FORMAT);
+	
+	if ( (fd = open(gen_filename, O_WRONLY)) < 0) {
+		char err_msg[256] = "";
+		sprintf(err_msg, "could not open file %s", gen_filename);
+		perror(err_msg);
+		return -1;
+	}
+
+	if (write(fd, I_CONFIG_FORMAT, n) < n) {
+		char err_msg[256] = "";
+		sprintf(err_msg, "could not write to %s", gen_filename);
+		perror(err_msg);
+		return -1;
+	}
+
+	return fd;
+}
+
 char * load_env(const char * env_buffer, const char * key) {
 	size_t env_len = 0;
 	char * occ = NULL;
@@ -131,7 +152,7 @@ ssize_t i_sprintf(char ** _out, char * _format, i_config * _i_node) {
 		if (_format[i] == '$') {
 			char * p = NULL;
 
-	 		if ((p = strstr(_format, I_WALLPAPER_FORMAT_STRING)) == (_format + i + 1)) {	
+	 		if ((p = strstr(_format, I_WALLPAPER_FORMAT_STRING)) == (_format + i + 1)) {
 				_format_string = I_WALLPAPER_FORMAT_STRING;
 				_data = (char*)malloc((
 					strlen(_i_node->i_wallpaper_dir_name) + 
@@ -216,7 +237,7 @@ ssize_t safe_read_data_from_file(const char * file_name, char ** buffer) {
 	ssize_t size = 0;
 
 	if ((fd = open(file_name, O_RDONLY)) < 0) {
-		perror("failed to open file");
+		perror(file_name);
 		return -1;
 		(*buffer) = NULL;
 	}

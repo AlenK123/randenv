@@ -2,7 +2,7 @@
 *.d
 
 # Annoying vscode stuff
-*.json
+.vscode/*
 
 # Object files
 *.o
