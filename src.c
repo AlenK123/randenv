@@ -18,26 +18,30 @@
 #define I_GENERATE_FLAG_1 "-g"
 #define I_GENERATE_FLAG_2 "--generate"
 
+#define HELP I_HELP_FLAG_1 "  " I_HELP_FLAG_2 " - displays this message\n"\
+I_GENERATE_FLAG_1 "  " I_GENERATE_FLAG_2 " <path> - generates a config file in the path\n"\
+I_CONFIG_FLAG_1 "  " I_CONFIG_FLAG_2 " <path to config file> - does the magic"
+
 #define KILOBYTE 1024
 
 extern int errno;
 
 int main(int argc, char ** argv, char ** envp) {
 	if (argc < 2) {
-		//print help
+		printf(HELP "\n");
 		return EXIT_SUCCESS;
 	}
 
 	for (int i = 1; i < argc; i++) {
 		/* if one of the string is equal it will yeild: !(0 * something) = 1 */
 		if ( !(strcmp(argv[i], I_HELP_FLAG_1) && strcmp(argv[i], I_HELP_FLAG_2)) ) {
-			printf("help\n");
+			printf(HELP "\n");
 			return EXIT_SUCCESS;
 		}
 
 		if ( !(strcmp(argv[i], I_GENERATE_FLAG_1) && strcmp(argv[i], I_GENERATE_FLAG_2)) ) {
 			if (i + 1 >= argc) {
-				fprintf(stderr, "Option %s requires the config file argument", argv[i]);
+				fprintf(stderr, "Option %s requires the config file argument\n", argv[i]);
 				return EXIT_FAILURE;
 			}
 
@@ -46,7 +50,7 @@ int main(int argc, char ** argv, char ** envp) {
 
 		if (!(strcmp(argv[i], I_CONFIG_FLAG_1) && strcmp(argv[i], I_CONFIG_FLAG_2)) ) {
 			if (i + 1 >= argc) {
-				fprintf(stderr, "Option %s requires the config file argument", argv[i]);
+				fprintf(stderr, "Option %s requires the config file argument\n", argv[i]);
 				return EXIT_FAILURE;
 			}
 			i_config * i_config_node = init(argv[i + 1]);

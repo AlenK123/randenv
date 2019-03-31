@@ -13,6 +13,7 @@
 #include "i_enviroment.h"
 #include "random_choice.h"
 
+#define KILOBYTE 1024
 
 #define I_WALLPAPER_DIR_KEY "wallpaper_dir"
 #define I_WALLPAPER_FORMAT_FILE "wallpaper_format_file"

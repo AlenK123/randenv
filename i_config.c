@@ -46,7 +46,7 @@ void clean_up(i_config * i_config_node) {
 
 ssize_t generate_config_file(const char * gen_filename) {
 	int fd;
-	size_t n = strlen(I_CONFIG_FORMAT);
+	size_t n = strlen(I_CONFIG_FORMAT "\n");
 	
 	if ( (fd = open(gen_filename, O_WRONLY)) < 0) {
 		char err_msg[256] = "";
@@ -55,7 +55,7 @@ ssize_t generate_config_file(const char * gen_filename) {
 		return -1;
 	}
 
-	if (write(fd, I_CONFIG_FORMAT, n) < n) {
+	if (write(fd, I_CONFIG_FORMAT "\n", n) < n) {
 		char err_msg[256] = "";
 		sprintf(err_msg, "could not write to %s", gen_filename);
 		perror(err_msg);
@@ -142,11 +142,11 @@ ssize_t i_sprintf(char ** _out, char * _format, i_config * _i_node) {
 		return -1;	
 	}
 	
-	size_t n = strlen(_format);
-	size_t len = 0;
 	char * _format_string = NULL;
 	char * _data = NULL; 
 	char * out = NULL;
+	size_t len = 0;
+	size_t n = strlen(_format);
 
 	for (int i = 0; i < n; i++) {
 		if (_format[i] == '$') {
@@ -176,7 +176,7 @@ ssize_t i_sprintf(char ** _out, char * _format, i_config * _i_node) {
 			}
 		}
 	}
-	fprintf(stderr, "the string \'%s\' in one of the format files does not match the program formatting scheme" "\n ", _format);
+	fprintf(stderr, "the string \'%s\'\n in one of the format files does not match the program formatting scheme" "\n ", _format);
 	return -1;
 }
 
@@ -201,16 +201,24 @@ ssize_t write_to_format_file(i_config * i_config_node) {
 	size = i_sprintf(&out_buffer, in_buffer, i_config_node);
 
 	if (size < 0) {
+		free(in_buffer);
+		free(out_buffer);
 		return -1;
 	}
 
-	if (safe_write_data_to_file(i_config_node->i_wallpaper_config_file, out_buffer) < 0) {
+	{
+		char sys_cmd[KILOBYTE] = "";
+		sprintf(sys_cmd, "cat /dev/null > %s", i_config_node->i_wallpaper_config_file);
+		system(sys_cmd);		
+	}
 
+	if ( (size = safe_write_data_to_file(i_config_node->i_wallpaper_config_file, out_buffer) ) < 0) {
+		perror(i_config_node->i_wallpaper_config_file);
 	}
 
 	free(in_buffer);
 	free(out_buffer);
-	return 0;
+	return size;
 }
 
 ssize_t safe_write_data_to_file(const char * filename, const char * buffer) {
